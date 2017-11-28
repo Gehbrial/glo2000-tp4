@@ -25,19 +25,42 @@ class EmailClient(object):
         header, *body = response.split(';')
 
         if header == 'ERROR':
-            print('Une erreur est survenue: "{}"'.format(body[0]))
+            raise Exception('Une erreur est survenue: "{}"'.format(body[0]))
 
-    def _register(self, username, password):
-        self._send_message('REGISTER', username, password)
+        return header, body
 
-    def create_account(self):
+    @staticmethod
+    def _get_user_credentials():
         username = input("Entrer votre nom d'utilisateur: ")
         password = getpass("Entrer votre mot de passe: ")
-        self._register(username, password)
 
+        return username, password
 
-def login():
-    print('Choice: world')
+    def create_account(self):
+        self._send_message('REGISTER', *EmailClient._get_user_credentials())
+
+    def login(self):
+        header, body = self._send_message('LOGIN', *EmailClient._get_user_credentials())
+
+        if header == 'BAD_PASSWORD':
+            print('Mot de passe invalide')
+            return
+
+        self.email_main_menu()
+
+    def email_main_menu(self):
+
+        submenu_items = {
+            'Envoi de courriels': lambda: 1,
+            'Consultation de courriels': lambda: 1,
+            'Statistiques': lambda: 1,
+            'Quitter': lambda: 1
+        }
+
+        while True:
+            m = Menu('Menu Principal', submenu_items)
+            m.show()
+            m.get_input()
 
 
 if __name__ == '__main__':
@@ -50,7 +73,7 @@ if __name__ == '__main__':
     client = EmailClient(parsed_args.dest, parsed_args.port)
 
     items = {
-        'Se connecter': login,
+        'Se connecter': client.login,
         'Creer un compte': client.create_account
     }
     main_menu = Menu('Menu de connexion', items)

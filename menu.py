@@ -18,9 +18,16 @@ class Menu(object):
     def get_input(self):
         try:
             idx = int(input(self._prompt)) - 1
-            self._index_hash[idx]()
+            mthd = self._index_hash[idx]
 
         except (ValueError, KeyError):
             print('Erreur: Entrer un nombre entre 1 et {}'.format(len(self._items.keys())))
             print()
             self.get_input()
+
+        else:
+            try:
+                mthd()
+
+            except Exception as e:
+                print(e)

@@ -1,5 +1,5 @@
 from socket_util import rcv_msg, snd_msg
-from user import create_user
+from user import create_user, validate_password
 
 
 import argparse
@@ -46,17 +46,23 @@ class MailServer(object):
             if msg_type == 'REGISTER':
                 # TODO: Handle if len body != 2
                 (username, password) = body
-                self.register(username, password)
+                create_user(username, password)
+                self._ok(s)
+
+            elif msg_type == 'LOGIN':
+                # TODO: Handle if len body != 2
+                (username, password) = body
+                ok = validate_password(username, password)
+
+                if ok:
+                    self._ok(s)
+                else:
+                    snd_msg(s, 'BAD_PASSWORD')
 
         except Exception as e:
             self._error(e, s)
 
-        self._ok(s)
-
         s.close()
-
-    def register(self, username, password):
-        create_user(username, password)
 
 
 if __name__ == '__main__':
