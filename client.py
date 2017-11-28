@@ -55,5 +55,6 @@ if __name__ == '__main__':
     }
     main_menu = Menu('Menu de connexion', items)
 
-    main_menu.show()
-    main_menu.get_input()
+    while True:
+        main_menu.show()
+        main_menu.get_input()

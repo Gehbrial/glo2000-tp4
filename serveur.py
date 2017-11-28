@@ -21,6 +21,10 @@ class MailServer(object):
     def _error(err, s):
         snd_msg(s, 'ERROR;' + str(err))
 
+    @staticmethod
+    def _ok(s):
+        snd_msg(s, 'OK')
+
     def start(self, port):
         server_socket = MailServer._get_socket()
         server_socket.bind(('localhost', port))
@@ -46,6 +50,10 @@ class MailServer(object):
 
         except Exception as e:
             self._error(e, s)
+
+        self._ok(s)
+
+        s.close()
 
     def register(self, username, password):
         create_user(username, password)
