@@ -13,10 +13,16 @@ class EmailClient(object):
 
     def __init__(self, destination, port):
         self._dest = (destination, port)
+        self._auth_token = None
 
     def _send_message(self, msg_type, *args):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.connect(self._dest)
+
+        if self._auth_token is not None:
+            args = list(args)
+            args.append(self._auth_token)
+
         snd_msg(s, ';'.join([msg_type] + [str(arg) for arg in args]))
 
         response = rcv_msg(s)
@@ -40,18 +46,21 @@ class EmailClient(object):
         self._send_message('REGISTER', *EmailClient._get_user_credentials())
 
     def login(self):
-        header, body = self._send_message('LOGIN', *EmailClient._get_user_credentials())
+        out = self._send_message('LOGIN', *EmailClient._get_user_credentials())
+        header, tkn_container = out
 
         if header == 'BAD_PASSWORD':
             print('Mot de passe invalide')
             return
+
+        self._auth_token = tkn_container[0]
 
         self.email_main_menu()
 
     def email_main_menu(self):
 
         submenu_items = {
-            'Envoi de courriels': lambda: 1,
+            'Envoi de courriels': self.send_email,
             'Consultation de courriels': lambda: 1,
             'Statistiques': lambda: 1,
             'Quitter': lambda: 1
@@ -61,6 +70,12 @@ class EmailClient(object):
             m = Menu('Menu Principal', submenu_items)
             m.show()
             m.get_input()
+
+    def send_email(self):
+        dest_email = input("Entrer l'adresse de destination: ")
+        subject = input('Entrer le sujet du message: ')
+        body = input('Entrer le corps du message: ')
+        header, body = self._send_message('SEND_MAIL', dest_email, subject, body)
 
 
 if __name__ == '__main__':

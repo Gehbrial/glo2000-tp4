@@ -1,9 +1,16 @@
+from mail import send_email
+
 from socket_util import rcv_msg, snd_msg
-from user import create_user, validate_password
+
+from user import create_user, validate_password, hash_text
 
 
 import argparse
+import os
 import socket
+
+
+SERVER_SECRET = os.getenv('SERVER_SECRET', 'some_app_secret')
 
 
 class MailServer(object):
@@ -24,6 +31,18 @@ class MailServer(object):
     @staticmethod
     def _ok(s):
         snd_msg(s, 'OK')
+
+    @staticmethod
+    def _generate_token(username):
+        concat = SERVER_SECRET + username
+        token = hash_text(concat)
+        return '{0}:{1}'.format(username, token)
+
+    @staticmethod
+    def _validate_token(tkn):
+        username, expected_hash = tkn.split(':')
+        actual_hash = MailServer._generate_token(username)
+        return actual_hash != expected_hash
 
     def start(self, port):
         server_socket = MailServer._get_socket()
@@ -55,9 +74,17 @@ class MailServer(object):
                 ok = validate_password(username, password)
 
                 if ok:
-                    self._ok(s)
+                    snd_msg(s, 'OK;{}'.format(MailServer._generate_token(username)))
                 else:
                     snd_msg(s, 'BAD_PASSWORD')
+
+            elif msg_type == 'SEND_MAIL':
+                dest, subject, body, token = body
+
+                if MailServer._validate_token(token):
+                    send_email(dest, subject, body, token.split(':')[0])
+                else:
+                    self._error('acces refuse', s)
 
         except Exception as e:
             self._error(e, s)

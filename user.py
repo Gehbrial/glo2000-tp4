@@ -13,8 +13,8 @@ def _enforce_password_rules(password):
         )
 
 
-def _hash_user_password(password):
-    hashed_text = sha256(password.encode()).hexdigest()
+def hash_text(txt):
+    hashed_text = sha256(txt.encode()).hexdigest()
     return hashed_text
 
 
@@ -24,13 +24,13 @@ def _read_user_password(username):
         return infile.read()
 
 
-def _user_exists(username):
+def user_exists(username):
     return os.path.isdir(username)
 
 
 def create_user(username, password):
 
-    if _user_exists(username):
+    if user_exists(username):
         raise ValueError("L'utilisateur {} existe deja".format(username))
 
     _enforce_password_rules(password)
@@ -41,14 +41,14 @@ def create_user(username, password):
     config_path = os.path.join(username, 'config.txt')
 
     with open(config_path, 'w') as config_file:
-        config_file.write(_hash_user_password(password))
+        config_file.write(hash_text(password))
 
 
 def validate_password(username, password):
-    if not _user_exists(username):
+    if not user_exists(username):
         raise ValueError("L'utilisateur {} n'existe pas".format(username))
 
-    actual = _hash_user_password(password)
+    actual = hash_text(password)
     expected = _read_user_password(username)
 
     return actual == expected
