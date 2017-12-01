@@ -83,6 +83,7 @@ class MailServer(object):
 
                 if MailServer._validate_token(token):
                     send_email(dest, subject, body, token.split(':')[0])
+                    self._ok(s)
                 else:
                     self._error('acces refuse', s)
 

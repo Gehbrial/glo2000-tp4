@@ -1,10 +1,16 @@
 from email.generator import Generator
 from email.mime.text import MIMEText
 
+from smtplib import SMTP
+
 from user import user_exists
 
 
 import os
+import re
+
+
+EMAIL_PATTERN = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
 
 
 def _format_sender(username):
@@ -37,17 +43,22 @@ def _save_mail(mail, username):
         gen.flatten(mail)
 
 
+def send_smtp(mail):
+    conn = SMTP(host='smtp.ulaval.ca', timeout=10)
+
+    conn.sendmail(mail['From'], mail['To'], mail.as_string())
+    conn.quit()
+
+
 def send_email(dest, subject, body, username):
+
+    if not re.search(EMAIL_PATTERN, dest):
+        raise ValueError('adresse "{}" invalide'.format(dest))
 
     mail = _build_mail_obj(dest, subject, body, _format_sender(username))
 
     if dest.endswith('@reseauglo.ca'):
         _save_mail(mail, dest.split('@')[0])
 
-    elif dest.is_valid_email():
-        # TODO: Forward msg to ulaval SMTP
-        pass
-
     else:
-        # Adresse invalide
-        raise ValueError('adresse "{}" invalide'.format(dest))
+        send_smtp(mail)
