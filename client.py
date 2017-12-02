@@ -91,7 +91,7 @@ class EmailClient(object):
                 items = {}
 
                 for k, v in messages.items():
-                    items[v] = lambda: self.get_email_content(k)
+                    items[v] = lambda key=k: self.get_email_content(key)
 
                 m = Menu('Sélectionnez le courriel à afficher', items)
                 m.show()
