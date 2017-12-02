@@ -8,6 +8,7 @@ from socket_util import rcv_msg, snd_msg
 import argparse
 import socket
 import sys
+import json
 
 
 class EmailClient(object):
@@ -97,10 +98,8 @@ class EmailClient(object):
     def consult_emails(self):
         header, data = self._send_message('CONSULT_EMAILS')
 
-        print(json.loads(data[0]))
-
         if header == 'OK':
-            messages = ast.literal_eval(data[0])
+            messages = json.loads(data[0])
 
             if bool(messages):
                 items = {}
@@ -133,7 +132,7 @@ class EmailClient(object):
         header, data = self._send_message('GET_STATS')
 
         if header == 'OK':
-            content = ast.literal_eval(data[0])
+            content = json.loads(data[0])
             title = "Statistiques"
 
             print()
