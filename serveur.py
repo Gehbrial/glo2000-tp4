@@ -1,4 +1,4 @@
-from mail import send_email
+from mail import send_email, retrieve_user_emails, get_email_content
 
 from socket_util import rcv_msg, snd_msg
 
@@ -86,6 +86,15 @@ class MailServer(object):
                     self._ok(s)
                 else:
                     self._error('acces refuse', s)
+            elif msg_type == 'CONSULT_EMAILS':
+                username = body[0].split(':')[0]
+                messages = retrieve_user_emails(username)
+                snd_msg(s, 'OK;{}'.format(messages))
+            elif msg_type == 'GET_EMAIL_CONTENT':
+                username = body[1].split(':')[0]
+                index = body[0]
+                content = get_email_content(username, index)
+                snd_msg(s, 'OK;{}'.format(content))
 
         except Exception as e:
             self._error(e, s)

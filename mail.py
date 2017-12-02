@@ -5,9 +5,9 @@ from smtplib import SMTP
 
 from user import user_exists
 
-
 import os
 import re
+import email
 
 
 EMAIL_PATTERN = re.compile(r"^[^@]+@[^@]+\.[^@]+$")
@@ -62,3 +62,36 @@ def send_email(dest, subject, body, username):
 
     else:
         send_smtp(mail)
+
+
+def retrieve_user_emails(username):
+    emails = {}
+
+    if user_exists(username) and os.path.isdir(username):
+        for file_name in os.listdir(username):
+            if file_name.endswith('.eml'):
+                file_path = os.path.join(username, file_name)
+                file_content = email.message_from_file(open(file_path))
+                key = os.path.splitext(os.path.basename(file_name))[0]
+                emails[key] = file_content['subject']
+
+    return emails
+
+
+def get_email_content(username, index):
+    content = ""
+
+    if user_exists(username) and os.path.isdir(username):
+        file_name = "{0}.eml".format(index)
+        file_path = os.path.join(username, file_name)
+
+        if os.path.isfile(file_path):
+            file_content = email.message_from_file(open(file_path))
+
+            if file_content.is_multipart():
+                for payload in file_content.get_payload():
+                    content += payload.get_payload()
+            else:
+                content += file_content.get_payload()
+
+    return content

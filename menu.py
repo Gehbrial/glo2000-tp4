@@ -1,3 +1,5 @@
+import os
+
 class Menu(object):
 
     def __init__(self, title, items, prompt='Entrer votre choix: '):
@@ -7,6 +9,7 @@ class Menu(object):
         self._index_hash = {i: items[k] for i, k in enumerate(items.keys())}
 
     def show(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
         print('{0}'.format(self._title))
         print('-' * len(self._title))
 

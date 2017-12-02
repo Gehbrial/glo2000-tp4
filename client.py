@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from getpass import getpass
 
 from menu import Menu
@@ -7,6 +10,7 @@ from socket_util import rcv_msg, snd_msg
 
 import argparse
 import socket
+import ast
 
 
 class EmailClient(object):
@@ -61,7 +65,7 @@ class EmailClient(object):
 
         submenu_items = {
             'Envoi de courriels': self.send_email,
-            'Consultation de courriels': lambda: 1,
+            'Consultation de courriels': self.consult_emails,
             'Statistiques': lambda: 1,
             'Quitter': lambda: 1
         }
@@ -76,6 +80,34 @@ class EmailClient(object):
         subject = input('Entrer le sujet du message: ')
         body = input('Entrer le corps du message: ')
         header, body = self._send_message('SEND_MAIL', dest_email, subject, body)
+
+    def consult_emails(self):
+        header, data = self._send_message('CONSULT_EMAILS')
+
+        if header == 'OK':
+            messages = ast.literal_eval(data[0])
+
+            if bool(messages):
+                items = {}
+
+                for k, v in messages.items():
+                    items[v] = lambda: self.get_email_content(k)
+
+                m = Menu('Sélectionnez le courriel à afficher', items)
+                m.show()
+                m.get_input()
+            else:
+                print('Aucun courriel trouvé')
+
+    def get_email_content(self, k):
+        header, data = self._send_message('GET_EMAIL_CONTENT', k)
+        title = "Contenu du message"
+
+        print("\n")
+        print(title)
+        print('-' * len(title) + "\n")
+        print(data[0] + "\n")
+        input("Appuyez sur une touche pour continuer... ")
 
 
 if __name__ == '__main__':
