@@ -4,7 +4,7 @@ class Menu(object):
         self._title = title
         self._items = items
         self._prompt = prompt
-        self._index_hash = {i: items[k] for i, k in enumerate(items.keys())}
+        self._index_hash = {i: items[k] for i, k in enumerate(sorted(items.keys()))}
 
     def show(self):
         print('{0}'.format(self._title))
