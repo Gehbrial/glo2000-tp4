@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 from getpass import getpass
 
 from menu import Menu
@@ -10,7 +7,6 @@ from socket_util import rcv_msg, snd_msg
 
 import argparse
 import socket
-import ast
 import sys
 
 
@@ -87,19 +83,21 @@ class EmailClient(object):
         subject = input('Entrer le sujet du message: ')
         body = input('Entrer le corps du message: ')
         header, body = self._send_message('SEND_MAIL', dest_email, subject, body)
-        print("\n")
+        print()
 
         if header == 'OK':
             print("Message envoyé avec succès!")
         else:
             print("Une erreur s'est produite lors de l'envoi du message")
 
-        print("\n")
+        print()
         input("Appuyez sur une <Entrée> pour continuer... ")
 
 
     def consult_emails(self):
         header, data = self._send_message('CONSULT_EMAILS')
+
+        print(json.loads(data[0]))
 
         if header == 'OK':
             messages = ast.literal_eval(data[0])
@@ -114,9 +112,9 @@ class EmailClient(object):
                 m.show()
                 m.get_input()
             else:
-                print("\n")
+                print()
                 print('Aucun courriel trouvé')
-                print("\n")
+                print()
                 input("Appuyez sur <Entrée> pour continuer... ")
 
     def get_email_content(self, k):
@@ -125,7 +123,7 @@ class EmailClient(object):
         if header == 'OK':
             title = "Contenu du message"
 
-            print("\n")
+            print()
             print(title)
             print('-' * len(title))
             print(data[0] + "\n")
@@ -138,14 +136,14 @@ class EmailClient(object):
             content = ast.literal_eval(data[0])
             title = "Statistiques"
 
-            print("\n")
+            print()
             print(title)
             print('-' * len(title))
 
             print("Nombre de messages dans le dossier: {0}".format(content["messages_count"]))
             print("Taille du dossier: {0}".format(content["folder_size"]))
             print("Messages par sujet:")
-            print("\n")
+            print()
 
             for subject in content["messages"]:
                 i = 1
@@ -155,7 +153,7 @@ class EmailClient(object):
                     print("{0}. {1}".format(i, msg))
                     i+=1
 
-                print("\n")
+                print()
 
 
             input("Appuyez sur <Entrée> pour continuer... ")

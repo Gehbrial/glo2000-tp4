@@ -9,11 +9,11 @@ class Menu(object):
         self._index_hash = {i: items[k] for i, k in enumerate(items.keys())}
 
     def show(self):
-        os.system('cls' if os.name == 'nt' else 'clear')
+        # os.system('cls' if os.name == 'nt' else 'clear')
         print('{0}'.format(self._title))
         print('-' * len(self._title))
 
-        for i, item in enumerate(self._items.keys()):
+        for i, item in enumerate(sorted(self._items.keys())):
             print('{0}. {1}'.format(i + 1, item))
 
         print()

@@ -8,6 +8,7 @@ from user import create_user, validate_password, hash_text
 import argparse
 import os
 import socket
+import json
 
 
 SERVER_SECRET = os.getenv('SERVER_SECRET', 'some_app_secret')
@@ -89,16 +90,16 @@ class MailServer(object):
             elif msg_type == 'CONSULT_EMAILS':
                 username = body[0].split(':')[0]
                 messages = retrieve_user_emails(username)
-                snd_msg(s, 'OK;{}'.format(messages))
+                snd_msg(s, 'OK;{}'.format(json.dumps(messages)))
             elif msg_type == 'GET_EMAIL_CONTENT':
                 username = body[1].split(':')[0]
                 index = body[0]
                 content = get_email_content(username, index)
-                snd_msg(s, 'OK;{}'.format(content))
+                snd_msg(s, 'OK;{}'.format(json.dumps(content)))
             elif msg_type == 'GET_STATS':
                 username = body[0].split(':')[0]
                 stats = retrieve_user_stats(username)
-                snd_msg(s, 'OK;{}'.format(stats))
+                snd_msg(s, 'OK;{}'.format(json.dumps(stats)))
 
         except Exception as e:
             self._error(e, s)
