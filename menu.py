@@ -10,7 +10,7 @@ class Menu(object):
         print('{0}'.format(self._title))
         print('-' * len(self._title))
 
-        for i, item in enumerate(self._items.keys()):
+        for i, item in enumerate(sorted(self._items.keys())):
             print('{0}. {1}'.format(i + 1, item))
 
         print()
