@@ -95,3 +95,29 @@ def get_email_content(username, index):
                 content += file_content.get_payload()
 
     return content
+
+
+def retrieve_user_stats(username):
+    stats = {
+        "messages_count": 0,
+        "folder_size": 0,
+        "messages": {}
+    }
+
+    if user_exists(username) and os.path.isdir(username):
+        for file_name in os.listdir(username):
+            if file_name.endswith('.eml'):
+                file_path = os.path.join(username, file_name)
+                file_content = email.message_from_file(open(file_path))
+                subject = file_content['subject']
+                message = get_email_content(username, file_name[:-4])
+
+                if subject in stats["messages"]:
+                    stats["messages"][subject].append(message)
+                else:
+                    stats["messages"][subject] = [message]
+
+                stats["messages_count"] += 1
+                stats["folder_size"] += os.path.getsize(file_path)
+
+    return stats

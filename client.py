@@ -11,6 +11,7 @@ from socket_util import rcv_msg, snd_msg
 import argparse
 import socket
 import ast
+import sys
 
 
 class EmailClient(object):
@@ -47,7 +48,13 @@ class EmailClient(object):
         return username, password
 
     def create_account(self):
-        self._send_message('REGISTER', *EmailClient._get_user_credentials())
+        out = self._send_message('REGISTER', *EmailClient._get_user_credentials())
+        header, tkn_container = out
+
+        if header == 'OK':
+            self._auth_token = tkn_container[0]
+            self.email_main_menu()
+
 
     def login(self):
         out = self._send_message('LOGIN', *EmailClient._get_user_credentials())
@@ -66,8 +73,8 @@ class EmailClient(object):
         submenu_items = {
             'Envoi de courriels': self.send_email,
             'Consultation de courriels': self.consult_emails,
-            'Statistiques': lambda: 1,
-            'Quitter': lambda: 1
+            'Statistiques': self.get_stats,
+            'Quitter': lambda: sys.exit()
         }
 
         while True:
@@ -80,6 +87,16 @@ class EmailClient(object):
         subject = input('Entrer le sujet du message: ')
         body = input('Entrer le corps du message: ')
         header, body = self._send_message('SEND_MAIL', dest_email, subject, body)
+        print("\n")
+
+        if header == 'OK':
+            print("Message envoyé avec succès!")
+        else:
+            print("Une erreur s'est produite lors de l'envoi du message")
+
+        print("\n")
+        input("Appuyez sur une <Entrée> pour continuer... ")
+
 
     def consult_emails(self):
         header, data = self._send_message('CONSULT_EMAILS')
@@ -97,17 +114,51 @@ class EmailClient(object):
                 m.show()
                 m.get_input()
             else:
+                print("\n")
                 print('Aucun courriel trouvé')
+                print("\n")
+                input("Appuyez sur <Entrée> pour continuer... ")
 
     def get_email_content(self, k):
         header, data = self._send_message('GET_EMAIL_CONTENT', k)
-        title = "Contenu du message"
 
-        print("\n")
-        print(title)
-        print('-' * len(title) + "\n")
-        print(data[0] + "\n")
-        input("Appuyez sur une touche pour continuer... ")
+        if header == 'OK':
+            title = "Contenu du message"
+
+            print("\n")
+            print(title)
+            print('-' * len(title))
+            print(data[0] + "\n")
+            input("Appuyez sur <Entrée> pour continuer... ")
+
+    def get_stats(self):
+        header, data = self._send_message('GET_STATS')
+
+        if header == 'OK':
+            content = ast.literal_eval(data[0])
+            title = "Statistiques"
+
+            print("\n")
+            print(title)
+            print('-' * len(title))
+
+            print("Nombre de messages dans le dossier: {0}".format(content["messages_count"]))
+            print("Taille du dossier: {0}".format(content["folder_size"]))
+            print("Messages par sujet:")
+            print("\n")
+
+            for subject in content["messages"]:
+                i = 1
+                print("*** {0} ***".format(subject))
+
+                for msg in content["messages"][subject]:
+                    print("{0}. {1}".format(i, msg))
+                    i+=1
+
+                print("\n")
+
+
+            input("Appuyez sur <Entrée> pour continuer... ")
 
 
 if __name__ == '__main__':

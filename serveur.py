@@ -1,4 +1,4 @@
-from mail import send_email, retrieve_user_emails, get_email_content
+from mail import send_email, retrieve_user_emails, get_email_content, retrieve_user_stats
 
 from socket_util import rcv_msg, snd_msg
 
@@ -66,7 +66,7 @@ class MailServer(object):
                 # TODO: Handle if len body != 2
                 (username, password) = body
                 create_user(username, password)
-                self._ok(s)
+                snd_msg(s, 'OK;{}'.format(MailServer._generate_token(username)))
 
             elif msg_type == 'LOGIN':
                 # TODO: Handle if len body != 2
@@ -95,6 +95,10 @@ class MailServer(object):
                 index = body[0]
                 content = get_email_content(username, index)
                 snd_msg(s, 'OK;{}'.format(content))
+            elif msg_type == 'GET_STATS':
+                username = body[0].split(':')[0]
+                stats = retrieve_user_stats(username)
+                snd_msg(s, 'OK;{}'.format(stats))
 
         except Exception as e:
             self._error(e, s)
