@@ -67,11 +67,14 @@ def send_email(dest, subject, body, username):
 def retrieve_user_emails(username):
     emails = {}
 
-    if user_exists(username) and os.path.isdir(username):
+    if user_exists(username):
         for file_name in os.listdir(username):
             if file_name.endswith('.eml'):
                 file_path = os.path.join(username, file_name)
-                file_content = email.message_from_file(open(file_path))
+
+                with open(file_path) as f:
+                    file_content = email.message_from_file(f)
+
                 key = os.path.splitext(os.path.basename(file_name))[0]
                 emails[key] = file_content['subject']
 
@@ -81,12 +84,13 @@ def retrieve_user_emails(username):
 def get_email_content(username, index):
     content = ""
 
-    if user_exists(username) and os.path.isdir(username):
+    if user_exists(username):
         file_name = "{0}.eml".format(index)
         file_path = os.path.join(username, file_name)
 
         if os.path.isfile(file_path):
-            file_content = email.message_from_file(open(file_path))
+            with open(file_path) as f:
+                file_content = email.message_from_file(f)
 
             if file_content.is_multipart():
                 for payload in file_content.get_payload():
@@ -104,11 +108,14 @@ def retrieve_user_stats(username):
         "messages": {}
     }
 
-    if user_exists(username) and os.path.isdir(username):
+    if user_exists(username):
         for file_name in os.listdir(username):
             if file_name.endswith('.eml'):
                 file_path = os.path.join(username, file_name)
-                file_content = email.message_from_file(open(file_path))
+
+                with open(file_path) as f:
+                    file_content = email.message_from_file(f)
+
                 subject = file_content['subject']
                 message = get_email_content(username, file_name[:-4])
 
